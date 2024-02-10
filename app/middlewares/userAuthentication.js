@@ -9,6 +9,7 @@ const userAuthentication = (req, res, next) => {
 
     const tokenData = jwt.verify(token.split(" ")[1], process.env.JWTAUTHKEY)
     req.user = tokenData
+    console.log("t",tokenData)
     next()
   } catch (e) {
     if (e.name === "JsonWebTokenError") {

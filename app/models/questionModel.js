@@ -17,6 +17,10 @@ const questionSchema = new mongoose.Schema(
       enum: ["radio", "checkbox", "textarea"],
     },
     tags: [String],
+    order: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 )

@@ -32,12 +32,6 @@ const userSchema = new mongoose.Schema(
       enum: ["freeUser", "subscribedUser", "admin"],
       default: "freeUser",
     },
-    journalList: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Journal",
-      },
-    ],
   },
   { timestamps: true }
 )

@@ -10,10 +10,11 @@ questionsController.add = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
 
-  const { name, label, options, inputType, tags } = req.body
+  const { order, name, label, options, inputType, tags } = req.body
 
   try {
     const question = new Question({
+      order,
       name,
       label,
       options,
@@ -50,13 +51,14 @@ questionsController.update = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
 
-  const { name, label, options, inputType, tags } = req.body
+  const { order, name, label, options, inputType, tags } = req.body
   const id = req.params.id
 
   try {
     const question = await Question.findByIdAndUpdate(
       id,
       {
+        order,
         name,
         label,
         options,
@@ -87,6 +89,36 @@ questionsController.delete = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error in deleting question", error: e.message })
+  }
+}
+
+questionsController.addMultiple = async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() })
+  }
+
+  const { questionList } = req.body
+  console.log(questionList)
+  try {
+    const questions = questionList.map((question) => {
+      return {
+        order: question.order,
+        name: question.name,
+        label: question.label,
+        options: question.options,
+        inputType: question.inputType,
+        tags: question.tags,
+      }
+    })
+
+    const result = await Question.insertMany(questions)
+    res.json(result)
+  } catch (e) {
+    console.error("Error in creating questions:", e)
+    res
+      .status(500)
+      .json({ message: "Error in creating questions", error: e.message })
   }
 }
 

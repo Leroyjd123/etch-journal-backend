@@ -1,5 +1,9 @@
-const User = require("../models/userModel")
 const questionValidationSchema = {
+  order: {
+    isNumber: {
+      errorMessage: "invalid order",
+    },
+  },
   name: {
     notEmpty: {
       errorMessage: "Question name is required",

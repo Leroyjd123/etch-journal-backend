@@ -15,6 +15,11 @@ const usersController = require("./app/controllers/usersController")
 const questionsController = require("./app/controllers/questionsController")
 
 const configDB = require("./config/db")
+const answersController = require("./app/controllers/answersController")
+const {
+  singleAnswerValidationSchema,
+  multipleAnswersValidationSchema,
+} = require("./app/middlewares/answerValidations")
 const port = process.env.PORT || 3999
 
 configDB()
@@ -56,6 +61,22 @@ app.put(
   questionsController.update
 )
 app.delete("/api/question/:id", questionsController.delete)
+
+app.post("/api/questions/", questionsController.addMultiple)
+
+app.post(
+  "/api/answer/",
+  checkSchema({ singleAnswerValidationSchema }),
+  answersController.addSingle
+)
+
+app.post(
+  "/api/answers/",
+  userAuthentication,
+  checkSchema(multipleAnswersValidationSchema),
+  answersController.addMultiple
+)
+app.get("/api/answers/", userAuthentication, answersController.list)
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`)
