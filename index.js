@@ -20,6 +20,8 @@ const {
   singleAnswerValidationSchema,
   multipleAnswersValidationSchema,
 } = require("./app/middlewares/answerValidations")
+const externalController = require("./app/controllers/externalController")
+const metricsController = require("./app/controllers/metricsController")
 const port = process.env.PORT || 3999
 
 configDB()
@@ -77,6 +79,20 @@ app.post(
   answersController.addMultiple
 )
 app.get("/api/answers/", userAuthentication, answersController.list)
+
+app.get("/api/quote/", externalController.getQuote)
+
+app.get("/api/metrics/tags", userAuthentication, metricsController.tagCount)
+app.get(
+  "/api/metrics/questions",
+  userAuthentication,
+  metricsController.topQuestions
+)
+app.get(
+  "/api/metrics/answers",
+  userAuthentication,
+  metricsController.answersDate
+)
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`)

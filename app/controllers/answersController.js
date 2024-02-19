@@ -4,22 +4,36 @@ const { validationResult } = require("express-validator")
 const { v4: uuidv4 } = require("uuid")
 const answersController = {}
 
+const tagConverter = (entries) => {
+  const words = entries.flatMap(
+    (ele) =>
+      ele
+        .replace(/[,.?!]/g, "") // Remove special characters
+        .split(" ") // Split by space to get words
+        .filter((word) => word.trim() !== "") // Remove empty strings
+        .map((word) => word.toLowerCase()) // Convert to lowercase
+  )
+
+  // Use a Set to eliminate duplicates and then spread it back into an array
+  return [...new Set(words)]
+}
+
 answersController.addSingle = async (req, res) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() })
   }
 
-  const { userID, questionID, entries, tags, date } = req.body
+  const { userID, questionID, entries, date } = req.body
 
   try {
     const answer = new Answer({
       userID,
       questionID,
       entries,
-      tags,
       date,
     })
+    answer.tags = tagConverter(entries)
 
     await answer.save()
     res.json(answer)
@@ -46,7 +60,7 @@ answersController.addMultiple = async (req, res) => {
       date,
       questionID: entry.questionID,
       entries: entry.entries,
-      tags: entry.tags,
+      tags: tagConverter(entry.entries),
     }
   })
 
