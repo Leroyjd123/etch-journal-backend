@@ -1,16 +1,19 @@
 const axios = require("axios")
+
 const externalController = {}
 
+// Fetches a random quote from the Quote Garden API.
 externalController.getQuote = async (req, res) => {
   try {
-    const response = await axios.get(
+    const { data } = await axios.get(
       "https://quote-garden.onrender.com/api/v3/quotes/random"
     )
-    // console.log(response.data.data)
-
-    res.json(response.data.data)
-  } catch (e) {
-    console.log(e)
+    res.json(data.data)
+  } catch (error) {
+    console.error("Error fetching quote:", error)
+    res
+      .status(500)
+      .json({ message: "Failed to fetch quote", error: error.message })
   }
 }
 

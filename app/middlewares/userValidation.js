@@ -1,49 +1,53 @@
 const User = require("../models/userModel")
 
-const nameSchema = {
-  isString: {
-    errorMessage: "Invalid name format",
+// Utility for creating simple validation rules
+const createValidationRule = (test, errorMessage) => ({ test, errorMessage })
+
+// Common validation tests for reusability
+const notEmpty = createValidationRule(
+  (value) => value.trim() !== "",
+  "Required"
+)
+const minLength = (length) =>
+  createValidationRule(
+    (value) => value && value.length >= length,
+    `Should be a minimum of ${length} characters`
+  )
+const isEmail = createValidationRule(
+  (value) => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value),
+  "Invalid email format"
+)
+
+// Custom validation for email uniqueness in registration
+const isUniqueEmail = {
+  options: async (value) => {
+    const user = await User.findOne({ emailAddress: value })
+    if (user) throw new Error("Email already registered")
+    return true
   },
-  notEmpty: {
-    errorMessage: "Required",
-  }
+  errorMessage: "Email already registered",
+}
+
+// Schema definitions
+const nameSchema = {
+  isString: notEmpty,
+  notEmpty,
 }
 
 const passwordSchema = {
-  notEmpty: {
-    errorMessage: "Password is required",
-  },
-  isLength: {
-    options: { min: 3 },
-    errorMessage: "Password should be a minimum of 3 characters",
-  },
+  notEmpty,
+  isLength: minLength(3),
 }
 
 const emailAddressRegistrationSchema = {
-  notEmpty: {
-    errorMessage: "Email is required",
-  },
-  isEmail: {
-    errorMessage: "Invalid email format",
-  },
-  custom: {
-    options: async (value) => {
-      const user = await User.findOne({ emailAddress: value })
-      if (user) {
-        throw new Error("Email already registered")
-      }
-      return true
-    },
-  },
+  notEmpty,
+  isEmail,
+  custom: isUniqueEmail,
 }
 
 const emailAddressLoginSchema = {
-  notEmpty: {
-    errorMessage: "Email is required",
-  },
-  isEmail: {
-    errorMessage: "Invalid email format",
-  },
+  notEmpty,
+  isEmail,
 }
 
 const userRegisterValidationSchema = {
@@ -64,5 +68,5 @@ const userUpdateValidationSchema = {
 module.exports = {
   userRegisterValidationSchema,
   userLoginValidationSchema,
-  userUpdateValidationSchema
+  userUpdateValidationSchema,
 }

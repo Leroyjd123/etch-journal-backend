@@ -1,14 +1,26 @@
 const Question = require("../models/questionModel")
-const _ = require("lodash")
 const { validationResult } = require("express-validator")
-const { v4: uuidv4 } = require("uuid")
-const questionsController = {}
 
-questionsController.add = async (req, res) => {
+/**
+ * Handles validation errors for express requests.
+ * @param {Object} req The request object.
+ * @param {Object} res The response object.
+ * @returns {boolean} True if no validation errors, otherwise false.
+ */
+const handleValidationErrors = (req, res) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() })
+    res.status(400).json({ errors: errors.array() })
+    return false
   }
+  return true
+}
+
+const questionsController = {}
+
+// Adds a new question to the database.
+questionsController.add = async (req, res) => {
+  if (!handleValidationErrors(req, res)) return
 
   const { order, name, label, options, inputType, tags } = req.body
 
@@ -24,32 +36,30 @@ questionsController.add = async (req, res) => {
 
     await question.save()
     res.json(question)
-  } catch (e) {
-    console.error("Error in creating question:", e)
+  } catch (error) {
+    console.error("Error in creating question:", error)
     res
       .status(500)
-      .json({ message: "Error in creating question", error: e.message })
+      .json({ message: "Error in creating question", error: error.message })
   }
 }
 
+// Lists all questions from the database.
 questionsController.list = async (req, res) => {
   try {
     const questions = await Question.find()
-
     res.json(questions)
-  } catch (e) {
-    console.error("Error in fetching questions:", e)
+  } catch (error) {
+    console.error("Error in fetching questions:", error)
     res
       .status(500)
-      .json({ message: "Error in fetching questions ", error: e.message })
+      .json({ message: "Error in fetching questions", error: error.message })
   }
 }
 
+// Updates a question by its ID.
 questionsController.update = async (req, res) => {
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() })
-  }
+  if (!handleValidationErrors(req, res)) return
 
   const { order, name, label, options, inputType, tags } = req.body
   const id = req.params.id
@@ -57,68 +67,48 @@ questionsController.update = async (req, res) => {
   try {
     const question = await Question.findByIdAndUpdate(
       id,
-      {
-        order,
-        name,
-        label,
-        options,
-        inputType,
-        tags,
-      },
+      { order, name, label, options, inputType, tags },
       { new: true }
     )
 
     res.json(question)
-  } catch (e) {
-    console.error("Error in updating question:", e)
+  } catch (error) {
+    console.error("Error in updating question:", error)
     res
       .status(500)
-      .json({ message: "Error in updating question", error: e.message })
+      .json({ message: "Error in updating question", error: error.message })
   }
 }
 
+// Deletes a question by its ID.
 questionsController.delete = async (req, res) => {
   const id = req.params.id
 
   try {
     const question = await Question.findByIdAndDelete(id)
-
     res.json(question)
-  } catch (e) {
-    console.error("Error in deleting question:", e)
+  } catch (error) {
+    console.error("Error in deleting question:", error)
     res
       .status(500)
-      .json({ message: "Error in deleting question", error: e.message })
+      .json({ message: "Error in deleting question", error: error.message })
   }
 }
 
+// Adds multiple questions to the database.
 questionsController.addMultiple = async (req, res) => {
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() })
-  }
+  if (!handleValidationErrors(req, res)) return
 
   const { questionList } = req.body
-  console.log(questionList)
-  try {
-    const questions = questionList.map((question) => {
-      return {
-        order: question.order,
-        name: question.name,
-        label: question.label,
-        options: question.options,
-        inputType: question.inputType,
-        tags: question.tags,
-      }
-    })
 
-    const result = await Question.insertMany(questions)
+  try {
+    const result = await Question.insertMany(questionList)
     res.json(result)
-  } catch (e) {
-    console.error("Error in creating questions:", e)
+  } catch (error) {
+    console.error("Error in creating questions:", error)
     res
       .status(500)
-      .json({ message: "Error in creating questions", error: e.message })
+      .json({ message: "Error in creating questions", error: error.message })
   }
 }
 

@@ -1,49 +1,63 @@
 const User = require("../models/userModel")
 const jwt = require("jsonwebtoken")
-const _ = require("lodash")
-const bcryptjs = require("bcryptjs")
+const bcrypt = require("bcryptjs")
 const { validationResult } = require("express-validator")
 const { v4: uuidv4 } = require("uuid")
-const usersController = {}
 
+/**
+ * Generates a hashed password using bcrypt.
+ * @param {string} password The password to hash.
+ * @returns {Promise<string>} A hashed password.
+ */
 const generatePassword = async (password) => {
-  const salt = await bcryptjs.genSalt()
-  return await bcryptjs.hash(password, salt)
+  const salt = await bcrypt.genSalt()
+  return bcrypt.hash(password, salt)
 }
 
-usersController.register = async (req, res) => {
+/**
+ * Handles validation errors for express requests.
+ * @param {Object} req The request object.
+ * @param {Object} res The response object.
+ * @returns {boolean} True if no validation errors, otherwise false.
+ */
+const handleValidationErrors = (req, res) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() })
+    res.status(400).json({ errors: errors.array() })
+    return false
   }
+  return true
+}
+
+const usersController = {}
+
+// Registers a new user.
+usersController.register = async (req, res) => {
+  if (!handleValidationErrors(req, res)) return
 
   const { emailAddress, password } = req.body
 
   try {
     const hashedPassword = await generatePassword(password)
-    const avatarID = uuidv4()
+    const avatarId = uuidv4()
 
-    const user = new User({
+    const user = await new User({
       emailAddress,
       password: hashedPassword,
       userType: "freeUser",
-      avatarID,
-    })
-
-    await user.save()
+      avatarId,
+    }).save()
 
     res.json({ message: "User registered successfully", userId: user._id })
-  } catch (e) {
-    console.error("Error in signup:", e)
-    res.status(500).json({ message: "Error in signup", error: e.message })
+  } catch (error) {
+    console.error("Error in signup:", error)
+    res.status(500).json({ message: "Error in signup", error: error.message })
   }
 }
 
+// Authenticates a user and provides a JWT token.
 usersController.login = async (req, res) => {
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() })
-  }
+  if (!handleValidationErrors(req, res)) return
 
   const { emailAddress, password } = req.body
   try {
@@ -52,7 +66,7 @@ usersController.login = async (req, res) => {
       return res.status(404).json({ message: "Invalid email" })
     }
 
-    const isPasswordValid = await bcryptjs.compare(password, user.password)
+    const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid password" })
     }
@@ -63,51 +77,44 @@ usersController.login = async (req, res) => {
     })
 
     res.json({ token: `Bearer ${token}` })
-  } catch (e) {
-    console.error("Error in login:", e)
-    res.status(500).json({ message: "Error in login", error: e.message })
+  } catch (error) {
+    console.error("Error in login:", error)
+    res.status(500).json({ message: "Error in login", error: error.message })
   }
 }
 
+// Retrieves the user's information based on their token.
 usersController.view = async (req, res) => {
   const userID = req.user.id
 
   try {
     const user = await User.findById(userID)
-
     res.json(user)
-  } catch (e) {
-    console.error("Error in fetching account details:", e)
-    res
-      .status(500)
-      .json({ message: "Error in fetching account details", error: e.message })
+  } catch (error) {
+    console.error("Error in fetching account details:", error)
+    res.status(500).json({
+      message: "Error in fetching account details",
+      error: error.message,
+    })
   }
 }
 
+// Updates user information.
 usersController.update = async (req, res) => {
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() })
-  }
+  if (!handleValidationErrors(req, res)) return
 
   const userID = req.user.id
-  const data = _.pick(req.body, [
-    "firstName",
-    "lastName",
-    "gender",
-    "phoneNumber",
-    "avatarID",
-  ])
+  const data = req.body
 
   try {
     const user = await User.findByIdAndUpdate(userID, data, { new: true })
-
     res.json(user)
-  } catch (e) {
-    console.error("Error in updating account details:", e)
-    res
-      .status(500)
-      .json({ message: "Error in updating account details", error: e.message })
+  } catch (error) {
+    console.error("Error in updating account details:", error)
+    res.status(500).json({
+      message: "Error in updating account details",
+      error: error.message,
+    })
   }
 }
 

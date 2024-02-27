@@ -1,54 +1,56 @@
-//Not required as we are handling the user authentication  
-// const userIDvalidation = {
-//   isMongoId: {
-//     errorMessage: "Invalid userID",
-//   },
-//   notEmpty: {
-//     errorMessage: "UserID is required",
-//   },
-// }
+// Reusable validation functions
+const isNotEmpty = (value) =>
+  value !== undefined && value !== null && value !== ""
+const isMongoId = (value) => /^[a-f\d]{24}$/i.test(value) // Simple regex check for MongoDB ObjectId
+const isDate = (value) => !isNaN(Date.parse(value))
+const isArray = (value) => Array.isArray(value) && value.length > 0
 
-const questionIDvalidation = {
-  isMongoId: {
-    errorMessage: "Invalid questionID",
-  },
-  notEmpty: {
-    errorMessage: "questionID is required",
-  },
+// Reusable error messages
+const errorMessages = {
+  required: "is required",
+  invalid: "is invalid",
+  mustBeArray: "must be an array",
+  arrayNotEmpty: "array must not be empty",
+}
+
+// Simplified rule creation for consistency
+const createValidationRule = (testFn, errorMessage) => ({
+  testFn,
+  errorMessage,
+})
+
+// Validation schemas
+const questionIDValidation = {
+  isMongoId: createValidationRule(isMongoId, `Invalid questionID`),
+  notEmpty: createValidationRule(
+    isNotEmpty,
+    `questionID ${errorMessages.required}`
+  ),
 }
 
 const dateValidation = {
-  isDate: {
-    errorMessage: "Invalid date format",
-  },
-  notEmpty: {
-    errorMessage: "date is required",
-  },
+  isDate: createValidationRule(isDate, `Invalid date format`),
+  notEmpty: createValidationRule(isNotEmpty, `Date ${errorMessages.required}`),
 }
 
 const entriesValidation = {
-  isArray: {
-    errorMessage: "entries must be an array",
-  },
-  notEmpty: {
-    errorMessage: "entries array must not be empty",
-  },
-  custom: {
-    options: (value) => Array.isArray(value) && value.length > 0,
-    errorMessage: "entries array must have at least one value",
-  },
+  isArray: createValidationRule(
+    isArray,
+    `Entries ${errorMessages.mustBeArray} and ${errorMessages.arrayNotEmpty}`
+  ),
 }
 
 const singleAnswerValidationSchema = {
-  questionID: questionIDvalidation,
+  questionID: questionIDValidation,
   date: dateValidation,
   entries: entriesValidation,
 }
 
-
-const multipleAnswersValidationSchema= {
+const multipleAnswersValidationSchema = {
   entryList: entriesValidation,
 }
 
-
-module.exports = {singleAnswerValidationSchema, multipleAnswersValidationSchema}
+module.exports = {
+  singleAnswerValidationSchema,
+  multipleAnswersValidationSchema,
+}

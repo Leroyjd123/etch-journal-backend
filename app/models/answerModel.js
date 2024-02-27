@@ -1,9 +1,12 @@
 const mongoose = require("mongoose")
 
-const answerSchema = new mongoose.Schema(
+const { Schema } = mongoose
+
+// Define Answer Schema
+const answerSchema = new Schema(
   {
-    userID: {
-      type: mongoose.Schema.Types.ObjectId,
+    userId: {
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -11,19 +14,29 @@ const answerSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    questionID: {
-      type: mongoose.Schema.Types.ObjectId,
+    questionId: {
+      type: Schema.Types.ObjectId,
       ref: "Question",
       required: true,
     },
     entries: {
-      type: [String], //if there is a single value, it means it was a radio option, multiple means checkbox, and a single long answer means it was a textarea
+      type: [String],
       required: true,
     },
-    tags: [String], //can be made to use the entries and question information for searching
+    tags: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 )
 
+// Entries interpretation varies by inputType from the related Question
+// - Radio: Single value
+// - Checkbox: Multiple values
+// - Textarea: Single, long answer
+
+// Compile model from schema
 const Answer = mongoose.model("Answer", answerSchema)
+
 module.exports = Answer

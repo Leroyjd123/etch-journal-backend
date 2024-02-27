@@ -1,28 +1,39 @@
 const Answer = require("../models/answerModel")
-const _ = require("lodash")
 const { validationResult } = require("express-validator")
-const { v4: uuidv4 } = require("uuid")
-const answersController = {}
 
+/**
+ * Handles validation errors for express requests.
+ * @param {Object} req The request object.
+ * @param {Object} res The response object.
+ * @returns {boolean} True if no validation errors, otherwise false.
+ */
+const handleValidationErrors = (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() })
+    return false
+  }
+  return true
+}
+
+// Converts entry strings to a unique set of lowercase tags.
 const tagConverter = (entries) => {
   const words = entries.flatMap(
-    (ele) =>
-      ele
-        .replace(/[,.?!]/g, "") // Remove special characters
-        .split(" ") // Split by space to get words
-        .filter((word) => word.trim() !== "") // Remove empty strings
-        .map((word) => word.toLowerCase()) // Convert to lowercase
+    (entry) =>
+      entry
+        .replace(/[,.?!]/g, "") // Remove punctuation.
+        .split(" ") // Split into words.
+        .filter((word) => word.trim() !== "") // Remove empty strings.
+        .map((word) => word.toLowerCase()) // Convert to lowercase.
   )
-
-  // Use a Set to eliminate duplicates and then spread it back into an array
   return [...new Set(words)]
 }
 
+const answersController = {}
+
+// Adds a single answer to the database.
 answersController.addSingle = async (req, res) => {
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() })
-  }
+  if (!handleValidationErrors(req, res)) return
 
   const { userID, questionID, entries, date } = req.body
 
@@ -32,59 +43,54 @@ answersController.addSingle = async (req, res) => {
       questionID,
       entries,
       date,
+      tags: tagConverter(entries),
     })
-    answer.tags = tagConverter(entries)
-
     await answer.save()
     res.json(answer)
-  } catch (e) {
-    console.error("Error in adding answer:", e)
+  } catch (error) {
+    console.error("Error in adding answer:", error)
     res
       .status(500)
-      .json({ message: "Error in adding answer", error: e.message })
+      .json({ message: "Error in adding answer", error: error.message })
   }
 }
 
+// Adds multiple answers to the database.
 answersController.addMultiple = async (req, res) => {
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() })
-  }
+  if (!handleValidationErrors(req, res)) return
 
   const { entryList, date } = req.body
   const userID = req.user.id
 
-  const answerList = entryList.map((entry) => {
-    return {
-      userID,
-      date,
-      questionID: entry.questionID,
-      entries: entry.entries,
-      tags: tagConverter(entry.entries),
-    }
-  })
+  const answersToAdd = entryList.map((entry) => ({
+    ...entry,
+    userID,
+    date,
+    tags: tagConverter(entry.entries),
+  }))
 
   try {
-    const answers = await Answer.insertMany(answerList)
+    const answers = await Answer.insertMany(answersToAdd)
     res.json(answers)
-  } catch (e) {
-    console.error("Error in adding answers:", e)
+  } catch (error) {
+    console.error("Error in adding answers:", error)
     res
       .status(500)
-      .json({ message: "Error in adding answers", error: e.message })
+      .json({ message: "Error in adding answers", error: error.message })
   }
 }
 
+// Lists all answers for a specific user.
 answersController.list = async (req, res) => {
   const userID = req.user.id
   try {
-    const answers = await Answer.find({ userID: userID })
+    const answers = await Answer.find({ userID })
     res.json(answers)
-  } catch (e) {
-    console.error("Error in fetching answers :", e)
+  } catch (error) {
+    console.error("Error in fetching answers:", error)
     res
       .status(500)
-      .json({ message: "Error in fetching answers  ", error: e.message })
+      .json({ message: "Error in fetching answers", error: error.message })
   }
 }
 
