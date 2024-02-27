@@ -1,6 +1,8 @@
 require("dotenv").config()
 const express = require("express")
 const cors = require("cors")
+const stripe = require("stripe")(process.env.STRIP_PRIVATE_KEY)
+
 const { checkSchema } = require("express-validator")
 
 const {
@@ -29,6 +31,45 @@ configDB()
 const app = express()
 app.use(express.json())
 app.use(cors())
+
+//STRIPE PAYMENT TEST
+app.post("/api/create-checkout-session", async (req, res) => {
+  const { product, paymentType } = req.body // Assuming paymentType is either 'one-time' or 'subscription'
+
+  // Define the line item based on payment type
+  let lineItems = []
+  if (paymentType === "one-time") {
+    lineItems = [
+      {
+        price_data: {
+          currency: "inr",
+          product_data: {
+            name: product.name,
+          },
+          unit_amount: product.price * 100,
+        },
+        quantity: product.quantity,
+      },
+    ]
+  } else if (paymentType === "subscription") {
+    lineItems = [
+      {
+        price: product.subscriptionPriceId, // Subscription price ID from Stripe dashboard
+        quantity: product.quantity,
+      },
+    ]
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"], // Add other methods as supported
+    line_items: lineItems,
+    mode: paymentType === "one-time" ? "payment" : "subscription",
+    success_url: "http://localhost:3000/success",
+    cancel_url: "http://localhost:3000/cancel",
+  })
+
+  res.json({ id: session.id })
+})
 
 app.post(
   "/api/user/register",
