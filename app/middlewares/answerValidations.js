@@ -41,7 +41,7 @@ const entriesValidation = {
 }
 
 const singleAnswerValidationSchema = {
-  questionID: questionIDValidation,
+  questionId: questionIDValidation,
   date: dateValidation,
   entries: entriesValidation,
 }

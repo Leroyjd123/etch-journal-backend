@@ -5,11 +5,11 @@ const metricsController = {}
 
 // Aggregates tag counts for a user's answers.
 metricsController.tagCount = async (req, res) => {
-  const userID = req.user.id
+  const userId = req.user.id
 
   try {
     const result = await Answer.aggregate([
-      { $match: { userID: new mongoose.Types.ObjectId(userID) } },
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       { $unwind: "$tags" },
       { $group: { _id: "$tags", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
@@ -27,15 +27,15 @@ metricsController.tagCount = async (req, res) => {
 
 // Aggregates top questions based on answer counts for a user.
 metricsController.topQuestions = async (req, res) => {
-  const userID = req.user.id
+  const userId = req.user.id
 
   try {
     const result = await Answer.aggregate([
-      { $match: { userID: new mongoose.Types.ObjectId(userID) } },
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       {
         $lookup: {
           from: "questions",
-          localField: "questionID",
+          localField: "questionId",
           foreignField: "_id",
           as: "questionDetails",
         },
@@ -43,14 +43,14 @@ metricsController.topQuestions = async (req, res) => {
       { $unwind: "$questionDetails" },
       {
         $group: {
-          _id: "$questionID",
+          _id: "$questionId",
           count: { $sum: 1 },
           label: { $first: "$questionDetails.label" },
           tags: { $first: "$questionDetails.tags" },
         },
       },
       { $sort: { count: -1 } },
-      { $project: { _id: 0, questionID: "$_id", count: 1, label: 1, tags: 1 } },
+      { $project: { _id: 0, questionId: "$_id", count: 1, label: 1, tags: 1 } },
     ])
 
     res.json(result)
@@ -64,11 +64,11 @@ metricsController.topQuestions = async (req, res) => {
 
 // Aggregates answers by date for a user.
 metricsController.answersDate = async (req, res) => {
-  const userID = req.user.id
+  const userId = req.user.id
 
   try {
     const results = await Answer.aggregate([
-      { $match: { userID: new mongoose.Types.ObjectId(userID) } },
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       {
         $project: {
           day: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },

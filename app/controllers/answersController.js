@@ -35,12 +35,12 @@ const answersController = {}
 answersController.addSingle = async (req, res) => {
   if (!handleValidationErrors(req, res)) return
 
-  const { userID, questionID, entries, date } = req.body
+  const { userId, questionId, entries, date } = req.body
 
   try {
     const answer = new Answer({
-      userID,
-      questionID,
+      userId,
+      questionId,
       entries,
       date,
       tags: tagConverter(entries),
@@ -60,11 +60,11 @@ answersController.addMultiple = async (req, res) => {
   if (!handleValidationErrors(req, res)) return
 
   const { entryList, date } = req.body
-  const userID = req.user.id
+  const userId = req.user.id
 
   const answersToAdd = entryList.map((entry) => ({
     ...entry,
-    userID,
+    userId,
     date,
     tags: tagConverter(entry.entries),
   }))
@@ -82,9 +82,9 @@ answersController.addMultiple = async (req, res) => {
 
 // Lists all answers for a specific user.
 answersController.list = async (req, res) => {
-  const userID = req.user.id
+  const userId = req.user.id
   try {
-    const answers = await Answer.find({ userID })
+    const answers = await Answer.find({ userId })
     res.json(answers)
   } catch (error) {
     console.error("Error in fetching answers:", error)

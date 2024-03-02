@@ -85,10 +85,10 @@ usersController.login = async (req, res) => {
 
 // Retrieves the user's information based on their token.
 usersController.view = async (req, res) => {
-  const userID = req.user.id
+  const userId = req.user.id
 
   try {
-    const user = await User.findById(userID)
+    const user = await User.findById(userId)
     res.json(user)
   } catch (error) {
     console.error("Error in fetching account details:", error)
@@ -103,11 +103,11 @@ usersController.view = async (req, res) => {
 usersController.update = async (req, res) => {
   if (!handleValidationErrors(req, res)) return
 
-  const userID = req.user.id
+  const userId = req.user.id
   const data = req.body
 
   try {
-    const user = await User.findByIdAndUpdate(userID, data, { new: true })
+    const user = await User.findByIdAndUpdate(userId, data, { new: true })
     res.json(user)
   } catch (error) {
     console.error("Error in updating account details:", error)
