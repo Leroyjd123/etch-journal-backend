@@ -9,25 +9,25 @@ const {
   userRegisterValidationSchema,
   userLoginValidationSchema,
   userUpdateValidationSchema,
-} = require("./app/middlewares/userValidation")
-const questionValidationSchema = require("./app/middlewares/questionValidations")
+} = require("./middlewares/userValidation")
+const questionValidationSchema = require("./middlewares/questionValidations")
 const {
   singleAnswerValidationSchema,
   multipleAnswersValidationSchema,
-} = require("./app/middlewares/answerValidations")
+} = require("./middlewares/answerValidations")
 
 // Middleware
-const userAuthentication = require("./app/middlewares/userAuthentication")
+const userAuthentication = require("./middlewares/userAuthentication")
 
 // Controllers
-const usersController = require("./app/controllers/usersController")
-const questionsController = require("./app/controllers/questionsController")
-const answersController = require("./app/controllers/answersController")
-const externalController = require("./app/controllers/externalController")
-const metricsController = require("./app/controllers/metricsController")
+const usersController = require("./controllers/usersController")
+const questionsController = require("./controllers/questionsController")
+const answersController = require("./controllers/answersController")
+const externalController = require("./controllers/externalController")
+const metricsController = require("./controllers/metricsController")
 
 // Database configuration
-const configDB = require("./config/db")
+const configDB = require("../config/db")
 
 const port = process.env.PORT || 3999
 configDB()
@@ -36,7 +36,7 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-app.post(
+app.get(
   "/", (req, res) => {
     res.send("Hello world")
   }
