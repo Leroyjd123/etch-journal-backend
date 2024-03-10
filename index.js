@@ -36,6 +36,12 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
+app.post(
+  "/", (req, res) => {
+    res.send("Hello world")
+  }
+)
+
 // User routes
 app.post(
   "/api/user/register",
