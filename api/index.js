@@ -62,26 +62,26 @@ app.put(
 )
 
 // Question routes
-app.post(
-  "/api/question/",
-  checkSchema(questionValidationSchema),
-  questionsController.add
+// app.post(
+//   "/api/question/",
+//   checkSchema(questionValidationSchema),
+//   questionsController.add
 )
 app.get("/api/question/", questionsController.list)
-app.put(
-  "/api/question/:id",
-  checkSchema(questionValidationSchema),
-  questionsController.update
-)
-app.delete("/api/question/:id", questionsController.delete)
+// app.put(
+//   "/api/question/:id",
+//   checkSchema(questionValidationSchema),
+//   questionsController.update
+// )
+// app.delete("/api/question/:id", questionsController.delete)
 app.post("/api/questions/", questionsController.addMultiple)
 
 // Answer routes
-app.post(
-  "/api/answer/",
-  checkSchema(singleAnswerValidationSchema),
-  answersController.addSingle
-)
+// app.post(
+//   "/api/answer/",
+//   checkSchema(singleAnswerValidationSchema),
+//   answersController.addSingle
+// )
 app.post(
   "/api/answers/",
   userAuthentication,
