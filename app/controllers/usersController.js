@@ -6,19 +6,20 @@ const { v4: uuidv4 } = require("uuid")
 
 /**
  * Generates a hashed password using bcrypt.
- * @param {string} password The password to hash.
- * @returns {Promise<string>} A hashed password.
  */
 const generatePassword = async (password) => {
   const salt = await bcrypt.genSalt()
   return bcrypt.hash(password, salt)
 }
 
+const generateToken = (tokenData) => {
+  return jwt.sign(tokenData, process.env.JWTAUTHKEY, {
+    expiresIn: "7d",
+  })
+}
+
 /**
  * Handles validation errors for express requests.
- * @param {Object} req The request object.
- * @param {Object} res The response object.
- * @returns {boolean} True if no validation errors, otherwise false.
  */
 const handleValidationErrors = (req, res) => {
   const errors = validationResult(req)
@@ -48,7 +49,10 @@ usersController.register = async (req, res) => {
       avatarId,
     }).save()
 
-    res.json({ message: "User registered successfully", userId: user._id })
+    const tokenData = { id: user._id, userType: user.userType }
+    const token = generateToken(tokenData)
+
+    res.json({ token: `Bearer ${token}` })
   } catch (error) {
     console.error("Error in signup:", error)
     res.status(500).json({ message: "Error in signup", error: error.message })
@@ -63,18 +67,16 @@ usersController.login = async (req, res) => {
   try {
     const user = await User.findOne({ emailAddress })
     if (!user) {
-      return res.status(404).json({ message: "Invalid email" })
+      return res.status(404).json({ message: "Invalid email or password" })
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid password" })
+      return res.status(401).json({ message: "Invalid email or password" })
     }
 
     const tokenData = { id: user._id, userType: user.userType }
-    const token = jwt.sign(tokenData, process.env.JWTAUTHKEY, {
-      expiresIn: "7d",
-    })
+    const token = generateToken(tokenData)
 
     res.json({ token: `Bearer ${token}` })
   } catch (error) {
