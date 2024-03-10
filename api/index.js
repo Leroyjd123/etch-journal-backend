@@ -66,7 +66,7 @@ app.put(
 //   "/api/question/",
 //   checkSchema(questionValidationSchema),
 //   questionsController.add
-)
+// )
 app.get("/api/question/", questionsController.list)
 // app.put(
 //   "/api/question/:id",
