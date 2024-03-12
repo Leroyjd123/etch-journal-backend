@@ -36,11 +36,9 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-app.get(
-  "/", (req, res) => {
-    res.send("Hello world")
-  }
-)
+app.get("/", (req, res) => {
+  res.send("Express on Vercel")
+})
 
 // User routes
 app.post(
@@ -110,6 +108,5 @@ app.get("/api/quote/", externalController.getQuote)
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`)
 })
-
 
 module.exports = app
