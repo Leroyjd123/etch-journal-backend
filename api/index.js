@@ -60,26 +60,26 @@ app.put(
 )
 
 // Question routes
-app.post(
-  "/api/question/",
-  checkSchema(questionValidationSchema),
-  questionsController.add
-)
+// app.post(
+//   "/api/question/",
+//   checkSchema(questionValidationSchema),
+//   questionsController.add
+// )
 app.get("/api/question/", questionsController.list)
-app.put(
-  "/api/question/:id",
-  checkSchema(questionValidationSchema),
-  questionsController.update
-)
-app.delete("/api/question/:id", questionsController.delete)
+// app.put(
+//   "/api/question/:id",
+//   checkSchema(questionValidationSchema),
+//   questionsController.update
+// )
+// app.delete("/api/question/:id", questionsController.delete)
 app.post("/api/questions/", questionsController.addMultiple)
 
 // Answer routes
-app.post(
-  "/api/answer/",
-  checkSchema(singleAnswerValidationSchema),
-  answersController.addSingle
-)
+// app.post(
+//   "/api/answer/",
+//   checkSchema(singleAnswerValidationSchema),
+//   answersController.addSingle
+// )
 app.post(
   "/api/answers/",
   userAuthentication,
@@ -92,17 +92,17 @@ app.get("/api/answers/", userAuthentication, answersController.list)
 app.get("/api/quote/", externalController.getQuote)
 
 // Metrics routes
-app.get("/api/metrics/tags", userAuthentication, metricsController.tagCount)
-app.get(
-  "/api/metrics/questions",
-  userAuthentication,
-  metricsController.topQuestions
-)
+// app.get("/api/metrics/tags", userAuthentication, metricsController.tagCount)
 // app.get(
-  "/api/metrics/answers",
-  userAuthentication,
-  metricsController.answersDate
-)
+//   "/api/metrics/questions",
+//   userAuthentication,
+//   metricsController.topQuestions
+// )
+// app.get(
+//   "/api/metrics/answers",
+//   userAuthentication,
+//   metricsController.answersDate
+// )
 
 // Server listen
 app.listen(port, () => {
