@@ -8,19 +8,16 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "index.js"
+      "src": "/api/(.*)",
+      "dest": "api/index.js"
     }
   ],
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }],
   "headers": [
     {
-      "source": "/(.*)",
-      "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }]
-    },
-    {
-      "source": "/vercel_app_domain_name/(.*)",
-      "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }]
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
     }
   ]
 }
