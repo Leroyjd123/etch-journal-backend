@@ -92,17 +92,17 @@ app.get("/api/answers/", userAuthentication, answersController.list)
 app.get("/api/quote/", externalController.getQuote)
 
 // Metrics routes
-// app.get("/api/metrics/tags", userAuthentication, metricsController.tagCount)
-// app.get(
-//   "/api/metrics/questions",
-//   userAuthentication,
-//   metricsController.topQuestions
-// )
-// app.get(
-//   "/api/metrics/answers",
-//   userAuthentication,
-//   metricsController.answersDate
-// )
+app.get("/api/metrics/tags", userAuthentication, metricsController.tagCount)
+app.get(
+  "/api/metrics/questions",
+  userAuthentication,
+  metricsController.topQuestions
+)
+app.get(
+  "/api/metrics/answers",
+  userAuthentication,
+  metricsController.answersDate
+)
 
 // Server listen
 app.listen(port, () => {
